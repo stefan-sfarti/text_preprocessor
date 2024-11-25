@@ -124,8 +124,52 @@ class MedicalTextPreprocessor:
 
         return ' '.join(standardized)
 
+    def remove_headers(self, text):
+        """Remove headers based on patterns found in the document."""
+        # Split the text into lines
+        lines = text.split('\n')
+        cleaned_lines = []
+
+        for line in lines:
+            # Skip lines matching header patterns
+            if (
+                    re.match(r'^\s*ESC Guidelines\s*$', line, re.IGNORECASE) or  # Match 'ESC Guidelines'
+                    re.match(r'^\s*\d{1,5}\s*$', line) or  # Match page numbers
+                    re.match(r'^\s*\d{1,5}\s*ESC Guidelines\s*$', line, re.IGNORECASE) or  # Combined format
+                    re.match(r'^\s*ESC Guidelines\s*\d{1,5}\s*$', line, re.IGNORECASE)  # Alternate combined format
+            ):
+                continue  # Skip this line
+
+            # Add the line if it doesn't match the header patterns
+            cleaned_lines.append(line)
+
+        return '\n'.join(cleaned_lines)
+
+    def process_table(self, table_text):
+        """
+        Transformă un tabel într-un format procesabil ca text.
+        - table_text: conținutul brut al tabelului.
+        """
+        # Elimină liniile delimitatoare (cum ar fi -----)
+        lines = [line.strip() for line in table_text.split('\n') if not re.match(r'^\-+$', line)]
+
+        # Separă coloanele folosind delimiterii și le unește într-un text simplu
+        processed_lines = []
+        for line in lines:
+            # Elimină delimitatorii '|' sau tab-urile
+            columns = [col.strip() for col in re.split(r'\|', line) if col.strip()]
+            # Concatenăm coloanele ca un singur rând de text
+            if columns:
+                processed_lines.append(" ".join(columns))
+
+        # Returnăm liniile procesate ca text unitar
+        return ". ".join(processed_lines)
+
     def preprocess(self, text):
         """Complete preprocessing pipeline"""
+
+        text = self.remove_headers(text)
+        text=self.process_table(text)
         # Clean the text
         text = self.clean_text(text)
 
