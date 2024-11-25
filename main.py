@@ -1,7 +1,7 @@
 from preprocess import MedicalTextPreprocessor
 import fitz
 import nltk
-nltk.download('punkt')
+
 
 
 # Step 1: Setup

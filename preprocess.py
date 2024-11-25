@@ -124,8 +124,30 @@ class MedicalTextPreprocessor:
 
         return ' '.join(standardized)
 
+    def remove_headers(self, text):
+        """Remove headers based on patterns found in the document."""
+        # Split the text into lines
+        lines = text.split('\n')
+        cleaned_lines = []
+
+        for line in lines:
+            # Skip lines matching header patterns
+            if (
+                    re.match(r'^\s*ESC Guidelines\s*$', line, re.IGNORECASE) or  # Match 'ESC Guidelines'
+                    re.match(r'^\s*\d{1,5}\s*$', line) or  # Match page numbers
+                    re.match(r'^\s*\d{1,5}\s*ESC Guidelines\s*$', line, re.IGNORECASE) or  # Combined format
+                    re.match(r'^\s*ESC Guidelines\s*\d{1,5}\s*$', line, re.IGNORECASE)  # Alternate combined format
+            ):
+                continue  # Skip this line
+
+            # Add the line if it doesn't match the header patterns
+            cleaned_lines.append(line)
+
+        return '\n'.join(cleaned_lines)
+
     def preprocess(self, text):
         """Complete preprocessing pipeline"""
+        text = self.remove_headers(text)
         # Clean the text
         text = self.clean_text(text)
 
