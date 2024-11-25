@@ -1,3 +1,4 @@
+import json
 import re
 import string
 import nltk
@@ -102,25 +103,26 @@ class MedicalTextPreprocessor:
         return ' '.join([word for word in words if word.lower() not in self.stop_words])
 
     def standardize_medical_terms(self, text):
-        """Standardize common medical abbreviations"""
-        medical_abbrev = {
-            'af': 'atrial fibrillation',
-            'mi': 'myocardial infarction',
-            'hf': 'heart failure',
-            'lvef': 'left ventricular ejection fraction',
-            'ace': 'angiotensin converting enzyme',
-            'arb': 'angiotensin receptor blocker',
-            'cv': 'cardiovascular'
-        }
+        """Standardize common medical abbreviations using a JSON file."""
+        with open('abbreviations.json', 'r') as file:
+            medical_abbrev = json.load(file)
 
         words = text.split()
         standardized = []
         for word in words:
             lower_word = word.lower()
-            if lower_word in medical_abbrev:
-                standardized.append(medical_abbrev[lower_word])
-            else:
-                standardized.append(word)
+            found = False
+            # Iterate through the list of dictionaries
+            for abbrev_dict in medical_abbrev:
+                for abbrev, full_form in abbrev_dict.items():  # Extract key-value pairs from each dictionary
+                    if lower_word == abbrev.lower():
+                        standardized.append(full_form)  # Replace with the corresponding full form
+                        found = True
+                        break
+                if found:
+                    break
+            if not found:
+                standardized.append(word)  # Keep the original word if no match is found
 
         return ' '.join(standardized)
 
