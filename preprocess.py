@@ -6,6 +6,9 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize
 from collections import Counter
+from nltk.tokenize import word_tokenize, sent_tokenize  # Tokenizarea cuvintelor și propozițiilor
+from nltk.tag import pos_tag
+
 
 
 class MedicalTextPreprocessor:
@@ -167,6 +170,12 @@ class MedicalTextPreprocessor:
         # Returnăm liniile procesate ca text unitar
         return ". ".join(processed_lines)
 
+    def pos_tagging(self, text):
+
+        words = word_tokenize(text)
+        # Aplică POS tagging pe cuvinte
+        return pos_tag(words)
+
     def preprocess(self, text):
         """Complete preprocessing pipeline"""
 
@@ -174,7 +183,8 @@ class MedicalTextPreprocessor:
         text=self.process_table(text)
         # Clean the text
         text = self.clean_text(text)
-
+        pos_tagged = self.pos_tagging(text)
+        print("Tagged POS:", pos_tagged)
         # Standardize medical terms
         text = self.standardize_medical_terms(text)
 
@@ -186,6 +196,7 @@ class MedicalTextPreprocessor:
 
         # Remove stopwords
         text = self.remove_stopwords(text)
+
 
         return text
 
